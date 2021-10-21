@@ -13,6 +13,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.net.toUri
+import com.google.android.material.snackbar.Snackbar
+import java.lang.NullPointerException
+import java.time.DateTimeException
+import java.util.*
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -77,9 +81,6 @@ class FirstFragment : Fragment() {
             }
 
         }
-
-
-        
 
         FirebaseDatabase().saveMovies(movies)
     }
