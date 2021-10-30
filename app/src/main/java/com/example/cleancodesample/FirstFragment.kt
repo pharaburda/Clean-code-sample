@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,10 +12,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.net.toUri
-import com.google.android.material.snackbar.Snackbar
-import java.lang.NullPointerException
-import java.time.DateTimeException
-import java.util.*
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -46,31 +41,35 @@ class FirstFragment : Fragment() {
             genreIcon.visibility = View.GONE
         }
 
-        val movies = MoviesAPI().getMoviesList()
-        movies.forEach {
-            val logToPrint =
-                if (it.title.length < 10) it.title else it.title.dropLast(it.title.length - 10)
-            titleView.text = logToPrint
-            val text = SpannableStringBuilder(it.description)
-            if (it.description.contains("authors")) {
-                text.setSpan(
-                    ForegroundColorSpan(Color.GREEN),
-                    it.description.indexOf("author"),
-                    "authors".length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-            val information = UserInfo().getUserId()
-            if (UserSubscriptionAPI().isPremiumUser(information)) {
+        fun bindTitle(movie: Movie) {
+            titleView.text = getMovieTitle(movie.title)
+        }
+
+        fun bindDescription(movie: Movie) {
+            descriptionView.text = getMovieDescription(movie.description)
+        }
+
+        fun bindPrize() {
+            val userId = UserInfo().getUserId()
+            if (UserSubscriptionAPI().isPremiumUser(userId)) {
                 prizeView.visibility = View.GONE
-            } else prizeView.text = "177787 PLN"
+            } else {
+                prizeView.visibility = View.VISIBLE
+                prizeView.text = "177787 PLN"
+            }
+        }
 
+        fun bindYear(movie: Movie) {
+            if (movie.year < 2000) {
+                yearView.visibility = View.GONE
+            } else {
+                yearView.visibility = View.VISIBLE
+                yearView.text = movie.year.toString()
+            }
+        }
 
-            descriptionView.text = text
-            if (it.year < 2000) return
-            yearView.text = it.year.toString()
-
-            val icon = when (it.genre) {
+        fun bindIcon(movie: Movie) {
+            val icon = when (movie.genre) {
                 Genre.COMEDY -> "/url/to/comedy/icon"
                 Genre.ACTION -> "/url/to/action/icon"
                 Genre.SCIFI -> "/url/to/scifi/icon"
@@ -79,16 +78,44 @@ class FirstFragment : Fragment() {
             }.toUri()
 
             genreIcon.setImageURI(icon)
+        }
 
-            if (it.isNotSuitableForChildren()) {
+        val movies = MoviesAPI().getMoviesList()
+        movies.forEach { movie ->
+            if (movie.isNotSuitableForChildren()) {
                 hide()
             }
+            bindTitle(movie)
+            bindDescription(movie)
+            bindPrize()
+            bindYear(movie)
+            bindIcon(movie)
         }
 
         FirebaseDatabase().saveMovies(movies)
     }
 
-    private fun Movie.isNotSuitableForChildren(): Boolean = this.rating != Rating.G || this.rating != Rating.PG
+    private fun Movie.isNotSuitableForChildren(): Boolean =
+        this.rating != Rating.G || this.rating != Rating.PG
 
+    private fun getMovieTitle(title: String): String {
+        return if (title.length < 10) {
+            title
+        } else {
+            title.dropLast(title.length - 10)
+        }
+    }
 
+    private fun getMovieDescription(description: String): SpannableStringBuilder {
+        val movieDescription = SpannableStringBuilder(description)
+        if (description.contains("authors")) {
+            movieDescription.setSpan(
+                ForegroundColorSpan(Color.GREEN),
+                description.indexOf("author"),
+                "authors".length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+        return movieDescription
+    }
 }
