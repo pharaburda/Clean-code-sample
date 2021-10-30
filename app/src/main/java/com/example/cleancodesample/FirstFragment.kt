@@ -24,8 +24,8 @@ import java.util.*
 class FirstFragment : Fragment() {
 
     override fun onCreateView(
-            inflater: LayoutInflater, container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_first, container, false)
@@ -33,55 +33,62 @@ class FirstFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val titleView = view.findViewById<TextView>(R.id.title)
+        val descriptionView = view.findViewById<TextView>(R.id.description)
+        val yearView = view.findViewById<TextView>(R.id.year)
+        val genreIcon = view.findViewById<ImageView>(R.id.genre_icon)
+        val prizeView = view.findViewById<TextView>(R.id.prize)
 
+        fun hide() {
+            titleView.visibility = View.GONE
+            descriptionView.visibility = View.GONE
+            yearView.visibility = View.GONE
+            genreIcon.visibility = View.GONE
+        }
 
-
-        val movies =  MoviesAPI().getMoviesList()
-        movies.forEach{
-            val logToPrint = if(it.title.length <   10) it.title else it.title.dropLast(it.title.length - 10)
-            view.findViewById<TextView>(R.id.title).text = logToPrint
-            val text = SpannableStringBuilder  (it.description)
-            if(    it.description.contains("author")) {
-                Log.e("My fragment", "DUPA")
+        val movies = MoviesAPI().getMoviesList()
+        movies.forEach {
+            val logToPrint =
+                if (it.title.length < 10) it.title else it.title.dropLast(it.title.length - 10)
+            titleView.text = logToPrint
+            val text = SpannableStringBuilder(it.description)
+            if (it.description.contains("authors")) {
+                text.setSpan(
+                    ForegroundColorSpan(Color.GREEN),
+                    it.description.indexOf("author"),
+                    "authors".length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
             }
-            if   (it.description.contains("authors")) {
-                text.setSpan(ForegroundColorSpan(Color.GREEN), it.description.indexOf("author"), "authors".length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            }
-            val  information =   UserInfo().getUserId()
-            if  (UserSubscriptionAPI().isPremiumUser(information    )) {
-                view.findViewById<TextView>(R.id.prize).visibility = View.GONE
-            } else view.findViewById<TextView   >(R.id.prize).text = "177787 PLN"
+            val information = UserInfo().getUserId()
+            if (UserSubscriptionAPI().isPremiumUser(information)) {
+                prizeView.visibility = View.GONE
+            } else prizeView.text = "177787 PLN"
 
 
-            view.findViewById<TextView> (R.id.description).text = text
-            if(it.year   < 2000) return
-            view.findViewById<TextView>(R.id.year).text     = it.year.toString()
+            descriptionView.text = text
+            if (it.year < 2000) return
+            yearView.text = it.year.toString()
 
-//            val imageUri = when(it.genre) {
-//                Genre.COMEDY ->
-
-            val icon = when(it.genre) {
-                Genre.COMEDY ->      "/url/to/comedy/icon"
-                Genre.ACTION ->  "/url/to/action/icon"
-                Genre.SCIFI ->   "/url/to/scifi/icon"
+            val icon = when (it.genre) {
+                Genre.COMEDY -> "/url/to/comedy/icon"
+                Genre.ACTION -> "/url/to/action/icon"
+                Genre.SCIFI -> "/url/to/scifi/icon"
                 Genre.FANTASY -> "/url/to/fantasy/icon"
-                Genre.DRAMA ->  "/url/to/drama/icon"
+                Genre.DRAMA -> "/url/to/drama/icon"
             }.toUri()
 
-            //Log.d("blablab", "/url/to/drama/icon".toUri().toString())
-            Log.e("Patka",   icon.toString())
-            view.findViewById   <ImageView>(R.id.genre_icon).setImageURI(icon)
+            genreIcon.setImageURI(icon)
 
-            //this is parental mode and show only children movies
-            if(it.rating !=  Rating.G ||     it.rating  != Rating.PG) {
-                view.findViewById<TextView>     (R.id.title).visibility = View.GONE
-                view.findViewById<TextView>(R.id.description).visibility = View.GONE
-                view.findViewById<TextView> (R.id.year).visibility = View.GONE
-                view.findViewById<ImageView>(   R.id.genre_icon).visibility = View.GONE
+            if (it.isNotSuitableForChildren()) {
+                hide()
             }
-
         }
 
         FirebaseDatabase().saveMovies(movies)
     }
+
+    private fun Movie.isNotSuitableForChildren(): Boolean = this.rating != Rating.G || this.rating != Rating.PG
+
+
 }
