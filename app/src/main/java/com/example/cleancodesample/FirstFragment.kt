@@ -80,8 +80,7 @@ class FirstFragment : Fragment() {
             genreIcon.setImageURI(icon)
         }
 
-        val movies = MoviesAPI().getMoviesList()
-        movies.forEach { movie ->
+        getMovies().forEach { movie ->
             if (movie.isNotSuitableForChildren()) {
                 hide()
             }
@@ -92,6 +91,13 @@ class FirstFragment : Fragment() {
             bindIcon(movie)
         }
 
+    }
+
+    private fun getMovies(): List<Movie> {
+        return MoviesAPI().getMoviesList()
+    }
+
+    fun saveMovies(movies: List<Movie>) {
         FirebaseDatabase().saveMovies(movies)
     }
 
