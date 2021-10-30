@@ -55,12 +55,12 @@ class FirstFragment : Fragment() {
                 prizeView.visibility = View.GONE
             } else {
                 prizeView.visibility = View.VISIBLE
-                prizeView.text = "177787 PLN"
+                prizeView.text = MOVIE_PRIZE
             }
         }
 
         fun bindYear(movie: Movie) {
-            if (movie.year < 2000) {
+            if (movie.year < MAX_MOVIE_YEAR) {
                 yearView.visibility = View.GONE
             } else {
                 yearView.visibility = View.VISIBLE
@@ -70,11 +70,11 @@ class FirstFragment : Fragment() {
 
         fun bindIcon(movie: Movie) {
             val icon = when (movie.genre) {
-                Genre.COMEDY -> "/url/to/comedy/icon"
-                Genre.ACTION -> "/url/to/action/icon"
-                Genre.SCIFI -> "/url/to/scifi/icon"
-                Genre.FANTASY -> "/url/to/fantasy/icon"
-                Genre.DRAMA -> "/url/to/drama/icon"
+                Genre.COMEDY -> COMEDY_URL
+                Genre.ACTION -> ACTION_URL
+                Genre.SCIFI -> SCIFI_URL
+                Genre.FANTASY -> FANTASY_URL
+                Genre.DRAMA -> DRAMA_URL
             }.toUri()
 
             genreIcon.setImageURI(icon)
@@ -105,23 +105,35 @@ class FirstFragment : Fragment() {
         this.rating != Rating.G || this.rating != Rating.PG
 
     private fun getMovieTitle(title: String): String {
-        return if (title.length < 10) {
+        return if (title.length < MAX_TITLE_LENGTH) {
             title
         } else {
-            title.dropLast(title.length - 10)
+            title.dropLast(title.length - MAX_TITLE_LENGTH)
         }
     }
 
     private fun getMovieDescription(description: String): SpannableStringBuilder {
         val movieDescription = SpannableStringBuilder(description)
-        if (description.contains("authors")) {
+        if (description.contains(AUTHORS)) {
             movieDescription.setSpan(
                 ForegroundColorSpan(Color.GREEN),
-                description.indexOf("author"),
-                "authors".length,
+                description.indexOf(AUTHORS),
+                AUTHORS.length,
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         }
         return movieDescription
+    }
+
+    companion object {
+        const val MOVIE_PRIZE = "177787 PLN"
+        const val AUTHORS = "authors"
+        const val COMEDY_URL = "/url/to/comedy/icon"
+        const val ACTION_URL = "/url/to/action/icon"
+        const val SCIFI_URL = "/url/to/scifi/icon"
+        const val FANTASY_URL = "/url/to/fantasy/icon"
+        const val DRAMA_URL = "/url/to/drama/icon"
+        const val MAX_MOVIE_YEAR = 2000
+        const val MAX_TITLE_LENGTH = 10
     }
 }
