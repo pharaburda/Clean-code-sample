@@ -1,22 +1,32 @@
-package com.example.cleancodesample
+package com.example.cleancodesample.presentation
 
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
+import com.example.cleancodesample.R
+import com.example.cleancodesample.data.entities.Genre
+import com.example.cleancodesample.data.entities.Movie
+import com.example.cleancodesample.data.entities.Rating
+import com.example.cleancodesample.domain.MoviesRepository
+import com.example.cleancodesample.domain.UserRepository
+import org.koin.android.ext.android.inject
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
 class FirstFragment : Fragment() {
+
+    private val moviesRepository: MoviesRepository by inject()
+    private val userRepository: UserRepository by inject()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,6 +49,7 @@ class FirstFragment : Fragment() {
             descriptionView.visibility = View.GONE
             yearView.visibility = View.GONE
             genreIcon.visibility = View.GONE
+            prizeView.visibility = View.GONE
         }
 
         fun bindTitle(movie: Movie) {
@@ -50,8 +61,8 @@ class FirstFragment : Fragment() {
         }
 
         fun bindPrize() {
-            val userId = UserInfo().getUserId()
-            if (UserSubscriptionAPI().isPremiumUser(userId)) {
+            val userId = userRepository.getUserId()
+            if (userRepository.isPremiumUser(userId)) {
                 prizeView.visibility = View.GONE
             } else {
                 prizeView.visibility = View.VISIBLE
@@ -94,11 +105,11 @@ class FirstFragment : Fragment() {
     }
 
     private fun getMovies(): List<Movie> {
-        return MoviesAPI().getMoviesList()
+        return moviesRepository.getMoviesList()
     }
 
     fun saveMovies(movies: List<Movie>) {
-        FirebaseDatabase().saveMovies(movies)
+        moviesRepository.saveMovies(movies)
     }
 
     private fun Movie.isNotSuitableForChildren(): Boolean =
