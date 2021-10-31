@@ -8,9 +8,10 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name=".presentation.MyApplication"
         android:theme="@style/Theme.CleanCodeSample">
         <activity
-            android:name=".MainActivity"
+            android:name=".presentation.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.CleanCodeSample.NoActionBar">
             <intent-filter>
